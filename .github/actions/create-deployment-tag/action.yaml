@@ -13,5 +13,5 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - run: ./create-deployment-tag.sh
+    - run: ${{ github.action_path }}/create-deployment-tag.sh
       shell: bash

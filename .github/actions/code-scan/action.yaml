@@ -3,5 +3,5 @@ description: 'Performs a code scan'
 runs:
   using: 'composite'
   steps:
-    - run: ./code-scan.sh
+    - run: ${{ github.action_path }}/code-scan.sh
       shell: bash

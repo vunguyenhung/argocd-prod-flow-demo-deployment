@@ -8,6 +8,7 @@ env=$ENV
 helm_version=$HELM_VERSION
 run_number=$RUN_NUMBER
 
+echo $helm_version
 # Construct the deployment tag
 deployment_tag="v${helm_version}-${run_number}-${env}"
 

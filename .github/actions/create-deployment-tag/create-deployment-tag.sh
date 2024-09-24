@@ -5,7 +5,7 @@ set -e
 
 # Get inputs from ENV
 env=$ENV
-version=$VERSION
+version=$HELM_VERSION
 run_number=$RUN_NUMBER
 
 # Construct the deployment tag

@@ -18,7 +18,7 @@ runs:
       shell: bash
       env:
         ENV: ${{ inputs.env }}
-        VERSION: ${{ inputs.version }}
+        HELM_VERSION: ${{ inputs.helm_version }}
         RUN_NUMBER: ${{ inputs.run_number }}
 outputs:
   deployment_tag:

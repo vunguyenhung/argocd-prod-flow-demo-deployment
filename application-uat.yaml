@@ -9,8 +9,9 @@ spec:
     repoURL: https://github.com/vunguyenhung/argocd-prod-flow-demo-deployment
     targetRevision: *-uat
     path: ""
+    helm:
+      valueFiles:
+      - values-uat.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: default
-  valueFiles:
-  - values-uat.yaml

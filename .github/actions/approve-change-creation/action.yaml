@@ -1,0 +1,7 @@
+name: 'Approve Change Creation'
+description: 'Approves change creation and outputs sample success JSON data'
+runs:
+  using: 'composite'
+  steps:
+    - run: ./approve-change-creation.sh
+      shell: bash

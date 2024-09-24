@@ -1,0 +1,87 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  Set-Flag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Extract Helm Version
+        id: extract_helm_version
+        run: |
+          VERSION=$(grep '^version:' Chart.yaml | awk '{print $2}')
+          echo "Version: $VERSION"
+          echo "::set-output name=helm_version::$VERSION"
+    outputs:
+      helm_version: ${{ steps.extract_helm_version.outputs.version }}
+
+  code-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Run Code Scan
+        uses: ./.github/actions/code-scan
+
+  dev-deployment:
+    needs: [Set-Flag, code-scan]
+    environment: DEVELOPMENT
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Create Tag for Development
+        uses: ./.github/actions/create-deployment-tag
+        with:
+          env: dev
+          version: ${{ needs.Set-Flag.outputs.helm_version }}
+          run_number: ${{ github.run_number }}
+
+  uat-deployment:
+    needs: [Set-Flag, code-scan, dev-deployment]
+    environment: UAT
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Create Tag for UAT
+        uses: ./.github/actions/create-deployment-tag
+        with:
+          env: uat
+          version: ${{ needs.Set-Flag.outputs.helm_version }}
+          run_number: ${{ github.run_number }}
+
+  approve-change-creation:
+    needs: [Set-Flag, code-scan, uat-deployment]
+    environment: APPROVE-CHANGE-CREATION
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Create Change Request
+        uses: ./.github/actions/approve-change-creation
+
+  production-deployment:
+    needs: [Set-Flag, code-scan, approve-change-creation]
+    environment: PRODUCTION
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Create Tag for Production
+        uses: ./.github/actions/create-deployment-tag
+        with:
+          env: prod
+          version: ${{ needs.Set-Flag.outputs.helm_version }}
+          run_number: ${{ github.run_number }}

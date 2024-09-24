@@ -1,0 +1,16 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: demo
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/vunguyenhung/argocd-prod-flow-demo-deployment
+    targetRevision: *-prod
+    path: ""
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  valueFiles:
+  - values-prod.yaml

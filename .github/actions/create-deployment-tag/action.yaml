@@ -1,0 +1,17 @@
+name: 'Create Deployment Tag'
+description: 'Creates a deployment tag based on the environment, version, and run number, and pushes it to the repository'
+inputs:
+  env:
+    description: 'Environment'
+    required: true
+  version:
+    description: 'Version'
+    required: true
+  run_number:
+    description: 'Run number'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - run: ./create-deployment-tag.sh
+      shell: bash

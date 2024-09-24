@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://github.com/vunguyenhung/argocd-prod-flow-demo-deployment
     targetRevision: *-prod
-    path: ""
+    path: "."
     helm:
       valueFiles:
       - values-prod.yaml

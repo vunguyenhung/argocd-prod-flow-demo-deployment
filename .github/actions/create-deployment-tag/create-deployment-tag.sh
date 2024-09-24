@@ -5,11 +5,11 @@ set -e
 
 # Get inputs from ENV
 env=$ENV
-version=$HELM_VERSION
+helm_version=$HELM_VERSION
 run_number=$RUN_NUMBER
 
 # Construct the deployment tag
-deployment_tag="v${version}-${run_number}-${env}"
+deployment_tag="v${helm_version}-${run_number}-${env}"
 
 # Configure Git
 git config --global user.name "github-actions[bot]"

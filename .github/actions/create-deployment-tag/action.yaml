@@ -4,8 +4,8 @@ inputs:
   env:
     description: "Environment"
     required: true
-  version:
-    description: "Version"
+  helm_version:
+    description: "Helm version"
     required: true
   run_number:
     description: "Run number"

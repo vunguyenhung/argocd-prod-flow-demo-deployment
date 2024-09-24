@@ -14,8 +14,12 @@ runs:
   using: "composite"
   steps:
     - id: create-deployment-tag
-      run: ${{ github.action_path }}/create-deployment-tag.sh
+      run: ${{ github.action_path }}/create-deployment-tag.sh 
       shell: bash
+      env:
+        ENV: ${{ inputs.env }}
+        VERSION: ${{ inputs.version }}
+        RUN_NUMBER: ${{ inputs.run_number }}
 outputs:
   deployment_tag:
     description: "Deployment tag"

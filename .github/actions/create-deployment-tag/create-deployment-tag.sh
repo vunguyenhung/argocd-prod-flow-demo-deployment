@@ -3,10 +3,10 @@
 # Exit immediately if a command exits with a non-zero status
 set -e
 
-# Get inputs
-env=$1
-version=$2
-run_number=$3
+# Get inputs from ENV
+env=$ENV
+version=$VERSION
+run_number=$RUN_NUMBER
 
 # Construct the deployment tag
 deployment_tag="v${version}-${run_number}-${env}"

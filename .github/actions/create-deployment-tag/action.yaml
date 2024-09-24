@@ -1,17 +1,20 @@
-name: 'Create Deployment Tag'
-description: 'Creates a deployment tag based on the environment, version, and run number, and pushes it to the repository'
+name: "Create Deployment Tag"
+description: "Creates a deployment tag based on the environment, version, and run number, and pushes it to the repository"
 inputs:
   env:
-    description: 'Environment'
+    description: "Environment"
     required: true
   version:
-    description: 'Version'
+    description: "Version"
     required: true
   run_number:
-    description: 'Run number'
+    description: "Run number"
     required: true
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
-    - run: ${{ github.action_path }}/create-deployment-tag.sh
+    - id: create-deployment-tag
+      run: ${{ github.action_path }}/create-deployment-tag.sh
       shell: bash
+outputs:
+  deployment_tag: ${{ steps.create-deployment-tag.outputs.deployment_tag }}

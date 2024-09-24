@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Exit immediately if a command exits with a non-zero status
+set -e
+
 # Get inputs
 env=$1
 version=$2
@@ -17,4 +20,4 @@ git tag -a $deployment_tag -m "Deployment tag for ${env} environment"
 git push origin $deployment_tag
 
 # Output the deployment tag
-echo "deployment_tag=${deployment_tag}" >> $GITHUB_ENV
+echo "deployment_tag=${deployment_tag}" >> $GITHUB_OUTPUT

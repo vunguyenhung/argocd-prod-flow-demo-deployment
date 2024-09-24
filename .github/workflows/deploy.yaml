@@ -19,7 +19,7 @@ jobs:
           echo "Version: $VERSION"
           echo "helm_version=$VERSION" >> $GITHUB_OUTPUT
     outputs:
-      helm_version: ${{ steps.extract_helm_version.outputs.version }}
+      helm_version: ${{ steps.extract_helm_version.outputs.helm_version }}
 
   code-scan:
     runs-on: ubuntu-latest

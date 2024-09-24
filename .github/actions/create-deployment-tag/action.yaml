@@ -17,4 +17,6 @@ runs:
       run: ${{ github.action_path }}/create-deployment-tag.sh
       shell: bash
 outputs:
-  deployment_tag: ${{ steps.create-deployment-tag.outputs.deployment_tag }}
+  deployment_tag:
+    description: "Deployment tag"
+    value: ${{ steps.create-deployment-tag.outputs.deployment_tag }}

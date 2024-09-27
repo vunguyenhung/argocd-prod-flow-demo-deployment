@@ -1,7 +1,0 @@
-name: 'Code Scan'
-description: 'Performs a code scan'
-runs:
-  using: 'composite'
-  steps:
-    - run: ${{ github.action_path }}/code-scan.sh
-      shell: bash

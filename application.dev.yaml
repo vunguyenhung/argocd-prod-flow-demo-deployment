@@ -7,14 +7,16 @@ spec:
   project: default
   source:
     repoURL: https://github.com/vunguyenhung/argocd-prod-flow-demo-deployment
-    targetRevision: ">=0.0.0-uat"
+    # Trunk based development, so latest code is always in main branch
+    targetRevision: main
     path: "."
     helm:
       valueFiles:
-      - values-uat.yaml
+      - values.dev.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: default
   syncPolicy:
     automated: 
       selfHeal: true
+      prune: true

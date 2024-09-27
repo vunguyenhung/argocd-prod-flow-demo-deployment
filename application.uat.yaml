@@ -7,11 +7,11 @@ spec:
   project: default
   source:
     repoURL: https://github.com/vunguyenhung/argocd-prod-flow-demo-deployment
-    targetRevision: v*-dev
+    targetRevision: uat
     path: "."
     helm:
       valueFiles:
-      - values-dev.yaml
+      - values.uat.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: default

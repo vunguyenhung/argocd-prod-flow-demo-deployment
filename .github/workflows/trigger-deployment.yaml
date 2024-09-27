@@ -1,0 +1,80 @@
+name: Trigger Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_name:
+        description: "Docker image name. Example: ghcr.io/user/demo"
+        required: true
+      image_tag:
+        description: "Docker image tag. Example: 0.1.0"
+        required: true
+
+jobs:
+  deploy-dev:
+    runs-on: ubuntu-latest
+    environment: DEVELOPMENT
+
+    steps:
+      - name: Update values.dev.yaml
+        uses: ./.github/workflows/update-value-file.yaml
+        with:
+          file_path: values.dev.yaml
+          image_tag: ${{ github.event.inputs.image_tag }}
+          base_branch: main
+          temp_branch: dev/${{ github.event.inputs.image_tag }}-${{ github.run_number }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy-uat:
+    needs: [deploy-dev]
+    runs-on: ubuntu-latest
+    environment: UAT
+
+    steps:
+      - name: Update values.dev.yaml
+        uses: ./.github/workflows/update-value-file.yaml
+        with:
+          file_path: values.uat.yaml
+          image_tag: ${{ github.event.inputs.image_tag }}
+          base_branch: main
+          temp_branch: uat/${{ github.event.inputs.image_tag }}-${{ github.run_number }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create and push uat tag
+        run: |
+          git fetch --tags --prune
+          if git rev-parse -q --verify "refs/tags/uat"; then
+            echo "Tag 'uat' already exists."
+            git tag -d uat
+            git push origin :refs/tags/uat
+          fi
+          git tag uat
+          git push origin uat
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy-prod:
+    needs: [deploy-uat]
+    runs-on: ubuntu-latest
+    environment: PRODUCTION
+
+    steps:
+      - name: Update values.prod.yaml
+        uses: ./.github/workflows/update-value-file.yaml
+        with:
+          file_path: values.prod.yaml
+          image_tag: ${{ github.event.inputs.image_tag }}
+          base_branch: main
+          temp_branch: prod/${{ github.event.inputs.image_tag }}-${{ github.run_number }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create and push production tag
+        run: |
+          git fetch --tags --prune
+          git tag ${{ github.event.inputs.image_tag }}
+          git push origin ${{ github.event.inputs.image_tag }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

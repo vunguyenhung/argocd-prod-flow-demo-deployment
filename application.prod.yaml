@@ -7,18 +7,12 @@ spec:
   project: default
   source:
     repoURL: https://github.com/vunguyenhung/argocd-prod-flow-demo-deployment
-    # Track latest tags >= 0.0.0-0
-    # 1.0.1-alpha
-    # 1.0.2-release
-    # 1.0.2-rc
-    # 1.0.4
-    # 1.0.4-prod
-    # 1.0.4-uat
-    targetRevision: ">=0.0.0-prod"
+    # Track latest tags
+    targetRevision: ">=0.0.0"
     path: "."
     helm:
       valueFiles:
-      - values-prod.yaml
+      - values.prod.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: default

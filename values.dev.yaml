@@ -2,7 +2,7 @@ replicaCount: 1
 
 image:
   repository: ghcr.io/vunguyenhung/demo
-  tag: "0.0.1-SNAPSHOT"
+  tag: 0.0.1-snapshot
   pullPolicy: Always
   ports:
     - name: http

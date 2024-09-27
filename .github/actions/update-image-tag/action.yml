@@ -23,15 +23,10 @@ runs:
       with:
         ref: ${{ inputs.base_branch }}
 
-    - name: Install yq
-      run: |
-        sudo apt-get update && sudo apt-get install -y yq
-      shell: bash
-
     - name: Get current version from file
       id: get_current_version
       run: |
-        CURRENT_VERSION=$(yq eval '.image.tag' ${{ inputs.file_path }})
+        CURRENT_VERSION=$(grep 'tag:' ${{ inputs.file_path }} | awk '{print $2}')
         echo "Current version: $CURRENT_VERSION"
         echo "::set-output name=current_version::$CURRENT_VERSION"
       shell: bash
@@ -56,10 +51,10 @@ runs:
         echo "temp_branch=${{ inputs.temp_branch }}" >> $GITHUB_OUTPUT
       shell: bash
 
-    - name: Update file with image tag
+    - name: Update image tag
       run: |
-        IMAGE_TAG=${{ inputs.image_tag }}
-        yq eval ".image.tag = \"$IMAGE_TAG\"" -i ${{ inputs.file_path }}
+        sed -i "s/tag: .*/tag: ${{ inputs.image_tag }}/" ${{ inputs.file_path }}
+        echo "Updated version to: ${{ inputs.image_tag }}"
       shell: bash
 
     - name: Commit changes

@@ -73,8 +73,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
-            const { data: pr } = await octokit.rest.pulls.create({
+            const { data: pr } = await github.rest.pulls.create({
               owner: process.env.GITHUB_REPOSITORY_OWNER,
               repo: process.env.GITHUB_REPOSITORY,
               head: process.env.TEMP_BRANCH,
@@ -100,14 +99,13 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
-            await octokit.rest.pulls.merge({
+            await github.rest.pulls.merge({
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: process.env.PR_NUMBER,
               merge_method: 'squash'
             });
-            await octokit.rest.git.deleteRef({
+            await github.rest.git.deleteRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
               ref: `heads/${process.env.TEMP_BRANCH}`

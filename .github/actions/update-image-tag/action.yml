@@ -26,6 +26,7 @@ runs:
     - name: Install yq
       run: |
         sudo apt-get update && sudo apt-get install -y yq
+      shell: bash
 
     - name: Get current version from file
       id: get_current_version
@@ -33,6 +34,7 @@ runs:
         CURRENT_VERSION=$(yq eval '.image.tag' ${{ inputs.file_path }})
         echo "Current version: $CURRENT_VERSION"
         echo "::set-output name=current_version::$CURRENT_VERSION"
+      shell: bash
 
     - name: Check if image tag has changed
       id: check_image_tag
@@ -43,6 +45,7 @@ runs:
         else
           echo "Image tag has changed. Continuing workflow."
         fi
+      shell: bash
 
     - name: Create a new temporary branch from base branch
       id: create_temp_branch
@@ -51,11 +54,13 @@ runs:
         git checkout ${{ inputs.base_branch }}
         git checkout -b ${{ inputs.temp_branch }}
         echo "temp_branch=${{ inputs.temp_branch }}" >> $GITHUB_OUTPUT
+      shell: bash
 
     - name: Update file with image tag
       run: |
         IMAGE_TAG=${{ inputs.image_tag }}
         yq eval ".image.tag = \"$IMAGE_TAG\"" -i ${{ inputs.file_path }}
+      shell: bash
 
     - name: Commit changes
       run: |
@@ -64,6 +69,7 @@ runs:
         git add ${{ inputs.file_path }}
         git commit -m "Update image tag to $IMAGE_TAG"
         git push origin ${{ inputs.temp_branch }}
+      shell: bash
 
     - name: Create Pull Request
       id: create_pr
@@ -90,6 +96,7 @@ runs:
     - name: Print PR details
       run: |
         echo "Pull Request created: ${{ steps.create_pr.outputs.pr_url }}"
+      shell: bash
 
     - name: Merge Pull Request
       uses: actions/github-script@v6

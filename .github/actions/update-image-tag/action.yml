@@ -1,0 +1,111 @@
+name: Update Image Tag in Values File
+description: 'Update the image tag in the values file if it has changed.'
+
+inputs:
+  file_path:
+    required: true
+    type: string
+  image_tag:
+    required: true
+    type: string
+  base_branch:
+    required: true
+    type: string
+  temp_branch:
+    required: true
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ inputs.base_branch }}
+
+    - name: Install yq
+      run: |
+        sudo apt-get update && sudo apt-get install -y yq
+
+    - name: Get current version from file
+      id: get_current_version
+      run: |
+        CURRENT_VERSION=$(yq eval '.image.tag' ${{ inputs.file_path }})
+        echo "Current version: $CURRENT_VERSION"
+        echo "::set-output name=current_version::$CURRENT_VERSION"
+
+    - name: Check if image tag has changed
+      id: check_image_tag
+      run: |
+        if [ "${{ inputs.image_tag }}" == "${{ steps.get_current_version.outputs.current_version }}" ]; then
+          echo "Image tag has not changed. Exiting."
+          exit 1
+        else
+          echo "Image tag has changed. Continuing workflow."
+        fi
+
+    - name: Create a new temporary branch from base branch
+      id: create_temp_branch
+      run: |
+        git fetch origin ${{ inputs.base_branch }}
+        git checkout ${{ inputs.base_branch }}
+        git checkout -b ${{ inputs.temp_branch }}
+        echo "temp_branch=${{ inputs.temp_branch }}" >> $GITHUB_OUTPUT
+
+    - name: Update file with image tag
+      run: |
+        IMAGE_TAG=${{ inputs.image_tag }}
+        yq eval ".image.tag = \"$IMAGE_TAG\"" -i ${{ inputs.file_path }}
+
+    - name: Commit changes
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git add ${{ inputs.file_path }}
+        git commit -m "Update image tag to $IMAGE_TAG"
+        git push origin ${{ inputs.temp_branch }}
+
+    - name: Create Pull Request
+      id: create_pr
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const { data: pr } = await github.rest.pulls.create({
+            owner: process.env.GITHUB_REPOSITORY_OWNER,
+            repo: process.env.GITHUB_REPOSITORY,
+            head: process.env.TEMP_BRANCH,
+            base: process.env.BASE_BRANCH,
+            title: `Update app version to ${process.env.IMAGE_TAG}.`,
+            body: `New version: ${process.env.IMAGE_TAG}`
+          });
+          core.setOutput('pr_number', pr.number);
+          core.setOutput('pr_url', pr.html_url);
+      env:
+        GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+        GITHUB_REPOSITORY: ${{ github.event.repository.name }}
+        TEMP_BRANCH: ${{ inputs.temp_branch }}
+        BASE_BRANCH: ${{ inputs.base_branch }}
+        IMAGE_TAG: ${{ inputs.image_tag }}
+
+    - name: Print PR details
+      run: |
+        echo "Pull Request created: ${{ steps.create_pr.outputs.pr_url }}"
+
+    - name: Merge Pull Request
+      uses: actions/github-script@v6
+      with:
+        script: |
+          await github.rest.pulls.merge({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: process.env.PR_NUMBER,
+            merge_method: 'squash'
+          });
+          await github.rest.git.deleteRef({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            ref: `heads/${process.env.TEMP_BRANCH}`
+          });
+      env:
+        PR_NUMBER: ${{ steps.create_pr.outputs.pr_number }}
+        TEMP_BRANCH: ${{ steps.create_temp_branch.outputs.temp_branch }}

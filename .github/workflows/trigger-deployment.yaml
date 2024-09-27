@@ -16,8 +16,11 @@ jobs:
     environment: DEVELOPMENT
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Update values.dev.yaml
-        uses: ./.github/workflows/update-value-file.yaml
+        uses: ./.github/actions/update-image-tag
         with:
           file_path: values.dev.yaml
           image_tag: ${{ github.event.inputs.image_tag }}
@@ -32,8 +35,11 @@ jobs:
     environment: UAT
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Update values.dev.yaml
-        uses: ./.github/workflows/update-value-file.yaml
+        uses: ./.github/actions/update-image-tag
         with:
           file_path: values.uat.yaml
           image_tag: ${{ github.event.inputs.image_tag }}
@@ -61,8 +67,11 @@ jobs:
     environment: PRODUCTION
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Update values.prod.yaml
-        uses: ./.github/workflows/update-value-file.yaml
+        uses: ./.github/actions/update-image-tag
         with:
           file_path: values.prod.yaml
           image_tag: ${{ github.event.inputs.image_tag }}

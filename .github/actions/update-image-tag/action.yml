@@ -82,9 +82,10 @@ runs:
       uses: actions/github-script@v6
       with:
         script: |
+          const { owner, repo } = context.repo;
           const body = {
-            owner: process.env.GITHUB_REPOSITORY_OWNER,
-            repo: process.env.GITHUB_REPOSITORY,
+            owner,
+            repo,
             head: process.env.TEMP_BRANCH,
             base: process.env.BASE_BRANCH,
             title: `${process.env.FILE_PATH}: Update image tag to ${process.env.IMAGE_TAG}`,
@@ -97,8 +98,6 @@ runs:
           core.setOutput('pr_number', pr.number);
           core.setOutput('pr_url', pr.html_url);
       env:
-        GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
-        GITHUB_REPOSITORY: ${{ github.event.repository.name }}
         TEMP_BRANCH: ${{ inputs.temp_branch }}
         BASE_BRANCH: ${{ inputs.base_branch }}
         IMAGE_TAG: ${{ inputs.image_tag }}

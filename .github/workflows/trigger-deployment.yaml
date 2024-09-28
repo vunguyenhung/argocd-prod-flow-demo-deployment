@@ -25,7 +25,7 @@ jobs:
           file_path: values.dev.yaml
           image_tag: ${{ github.event.inputs.image_tag }}
           base_branch: main
-          temp_branch: dev/${{ github.event.inputs.image_tag }}-${{ github.run_number }}
+          temp_branch: dev/${{ github.event.inputs.image_tag }}-run-${{ github.run_number }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -44,7 +44,7 @@ jobs:
           file_path: values.uat.yaml
           image_tag: ${{ github.event.inputs.image_tag }}
           base_branch: main
-          temp_branch: uat/${{ github.event.inputs.image_tag }}-${{ github.run_number }}
+          temp_branch: uat/${{ github.event.inputs.image_tag }}-run-${{ github.run_number }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -76,7 +76,7 @@ jobs:
           file_path: values.prod.yaml
           image_tag: ${{ github.event.inputs.image_tag }}
           base_branch: main
-          temp_branch: prod/${{ github.event.inputs.image_tag }}-${{ github.run_number }}
+          temp_branch: prod/${{ github.event.inputs.image_tag }}-run-${{ github.run_number }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

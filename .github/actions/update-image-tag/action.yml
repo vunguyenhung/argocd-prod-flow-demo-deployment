@@ -1,5 +1,5 @@
 name: Update Image Tag in Values File
-description: 'Update the image tag in the values file if it has changed.'
+description: "Update the image tag in the values file if it has changed."
 
 inputs:
   file_path:
@@ -28,13 +28,15 @@ runs:
       run: |
         CURRENT_VERSION=$(grep 'tag:' ${{ inputs.file_path }} | awk '{print $2}')
         echo "Current version: $CURRENT_VERSION"
-        echo "::set-output name=current_version::$CURRENT_VERSION"
+        echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
       shell: bash
 
     - name: Check if image tag has changed
       id: check_image_tag
       run: |
-        if [ "${{ inputs.image_tag }}" == "${{ steps.get_current_version.outputs.current_version }}" ]; then
+        CURRENT_VERSION_LOWER=$(echo "${{ steps.get_current_version.outputs.current_version }}" | tr '[:upper:]' '[:lower:]')
+        NEW_IMAGE_TAG_LOWER=$(echo "${{ inputs.image_tag }}" | tr '[:upper:]' '[:lower:]')
+        if [ "$NEW_IMAGE_TAG_LOWER" == "$CURRENT_VERSION_LOWER" ]; then
           echo "Image tag has not changed. Exiting."
           exit 1
         else
@@ -55,6 +57,17 @@ runs:
       run: |
         sed -i "s/tag: .*/tag: ${{ inputs.image_tag }}/" ${{ inputs.file_path }}
         echo "Updated version to: ${{ inputs.image_tag }}"
+        cat ${{ inputs.file_path }}
+      shell: bash
+
+    - name: Print Github object
+      run: |
+        echo "$GITHUB_OUTPUT"
+        echo $GITHUB_OUTPUT
+
+        echo "GITHUB EVENT"
+        echo ${{ toJson(github) }}
+        
       shell: bash
 
     - name: Commit changes
@@ -62,7 +75,7 @@ runs:
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
         git add ${{ inputs.file_path }}
-        git commit -m "Update image tag to $IMAGE_TAG"
+        git commit -m "${{ inputs.file_path }}: Update image tag to ${{ inputs.image_tag }}"
         git push origin ${{ inputs.temp_branch }}
       shell: bash
 
@@ -76,7 +89,7 @@ runs:
             repo: process.env.GITHUB_REPOSITORY,
             head: process.env.TEMP_BRANCH,
             base: process.env.BASE_BRANCH,
-            title: `Update app version to ${process.env.IMAGE_TAG}.`,
+            title: `${process.env.FILE_PATH}: Update image tag to ${process.env.IMAGE_TAG}`,
             body: `New version: ${process.env.IMAGE_TAG}`
           });
           core.setOutput('pr_number', pr.number);
@@ -87,6 +100,7 @@ runs:
         TEMP_BRANCH: ${{ inputs.temp_branch }}
         BASE_BRANCH: ${{ inputs.base_branch }}
         IMAGE_TAG: ${{ inputs.image_tag }}
+        FILE_PATH: ${{ inputs.file_path }}
 
     - name: Print PR details
       run: |

@@ -82,14 +82,18 @@ runs:
       uses: actions/github-script@v6
       with:
         script: |
-          const { data: pr } = await github.rest.pulls.create({
+          const body = {
             owner: process.env.GITHUB_REPOSITORY_OWNER,
             repo: process.env.GITHUB_REPOSITORY,
             head: process.env.TEMP_BRANCH,
             base: process.env.BASE_BRANCH,
             title: `${process.env.FILE_PATH}: Update image tag to ${process.env.IMAGE_TAG}`,
             body: `New version: ${process.env.IMAGE_TAG}`
-          });
+          };
+          console.log(`Creating PR with the following details:`);
+          console.log(JSON.stringify(body, null, 2));
+
+          const { data: pr } = await github.rest.pulls.create(body);
           core.setOutput('pr_number', pr.number);
           core.setOutput('pr_url', pr.html_url);
       env:

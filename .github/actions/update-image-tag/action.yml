@@ -60,14 +60,13 @@ runs:
         cat ${{ inputs.file_path }}
       shell: bash
 
-    # print github objects using nodejs
-    - name: Print github objects
+    - name: Print GitHub objects and event for debug
       run: |
-        console.log(JSON.stringify(process.env, null, 2));
-      env:
-        GITHUB_OUTPUT: ${{ github.output }}
-        GITHUB_EVENT: ${{ github.event }}
-      shell: node
+        echo "GITHUB_CONTEXT:"
+        echo "${{ toJson(github) }}"
+        echo "EVENT_CONTEXT:"
+        cat $GITHUB_EVENT_PATH
+      shell: bash
 
     - name: Commit changes
       run: |

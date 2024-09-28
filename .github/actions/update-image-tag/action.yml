@@ -62,10 +62,7 @@ runs:
 
     - name: Print Github object
       run: |
-        echo "$GITHUB_OUTPUT"
-        echo $GITHUB_OUTPUT
-
-        echo "GITHUB EVENT"
+        echo "GITHUB EVENT:"
         echo ${{ toJson(github) }}
         
       shell: bash

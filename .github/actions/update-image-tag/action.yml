@@ -64,7 +64,6 @@ runs:
     - name: Print github objects
       run: |
         console.log(JSON.stringify(process.env, null, 2));
-      shell: bash
       env:
         GITHUB_OUTPUT: ${{ github.output }}
         GITHUB_EVENT: ${{ github.event }}

@@ -60,14 +60,6 @@ runs:
         cat ${{ inputs.file_path }}
       shell: bash
 
-    - name: Print GitHub objects and event for debug
-      run: |
-        echo "GITHUB_CONTEXT:"
-        echo "${{ toJson(github) }}"
-        echo "EVENT_CONTEXT:"
-        cat $GITHUB_EVENT_PATH
-      shell: bash
-
     - name: Commit changes
       run: |
         git config --global user.name 'github-actions[bot]'

@@ -19,13 +19,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Update values.dev.yaml
+      - name: Update image tag in values.dev.yaml
         uses: ./.github/actions/update-image-tag
         with:
           file_path: values.dev.yaml
           image_tag: ${{ github.event.inputs.image_tag }}
           base_branch: main
-          temp_branch: dev/${{ github.event.inputs.image_tag }}-run-${{ github.run_number }}
+          temp_branch: dev/app-${{ github.event.inputs.image_tag }}-run-${{ github.run_number }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -38,13 +38,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Update values.dev.yaml
+      - name: Update image tag values.dev.yaml
         uses: ./.github/actions/update-image-tag
         with:
           file_path: values.uat.yaml
           image_tag: ${{ github.event.inputs.image_tag }}
           base_branch: main
-          temp_branch: uat/${{ github.event.inputs.image_tag }}-run-${{ github.run_number }}
+          temp_branch: uat/app-${{ github.event.inputs.image_tag }}-run-${{ github.run_number }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -52,7 +52,7 @@ jobs:
         run: |
           git fetch --tags --prune
           if git rev-parse -q --verify "refs/tags/uat"; then
-            echo "Tag 'uat' already exists."
+            echo "Tag 'uat' already exists. Pinning to the latest commit."
             git tag -d uat
             git push origin :refs/tags/uat
           fi
@@ -70,20 +70,28 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Update values.prod.yaml
+      - name: Update image tag in values.prod.yaml
         uses: ./.github/actions/update-image-tag
         with:
           file_path: values.prod.yaml
           image_tag: ${{ github.event.inputs.image_tag }}
           base_branch: main
-          temp_branch: prod/${{ github.event.inputs.image_tag }}-run-${{ github.run_number }}
+          temp_branch: prod/app-${{ github.event.inputs.image_tag }}-run-${{ github.run_number }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create and push production tag
         run: |
+          HELM_VERSION=$(grep 'version:' Chart.yaml | awk '{print $2}')
+          echo "Helm version used for the tag: $HELM_VERSION"
+
           git fetch --tags --prune
-          git tag ${{ github.event.inputs.image_tag }}
-          git push origin ${{ github.event.inputs.image_tag }}
+          if git rev-parse -q --verify "refs/tags/$HELM_VERSION"; then
+            echo "Tag ${HELM_VERSION} already exists. Pinning to the latest commit."
+            git tag -d $HELM_VERSION
+            git push origin :refs/tags/$HELM_VERSION
+          fi
+          git tag $HELM_VERSION
+          git push origin $HELM_VERSION
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

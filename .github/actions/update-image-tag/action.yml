@@ -71,7 +71,7 @@ runs:
 
     - name: Create Pull Request
       id: create_pr
-      uses: actions/github-script@v6
+      uses: actions/github-script@v7
       with:
         script: |
           const { owner, repo } = context.repo;
@@ -101,7 +101,7 @@ runs:
       shell: bash
 
     - name: Merge Pull Request
-      uses: actions/github-script@v6
+      uses: actions/github-script@v7
       with:
         script: |
           await github.rest.pulls.merge({

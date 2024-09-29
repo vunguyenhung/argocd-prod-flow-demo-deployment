@@ -6,7 +6,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/vunguyenhung/argocd-prod-flow-demo-deployment
-    targetRevision: uat
+    targetRevision: refs/tags/uat
     path: "."
     helm:
       valueFiles:

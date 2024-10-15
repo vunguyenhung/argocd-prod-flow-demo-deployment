@@ -28,13 +28,13 @@ jobs:
             git fetch origin $GITHUB_BASE_REF --depth=1
             # Only select the mofidied directories that isn't "common" but an actual app
             export CHANGED_APPS=$( git diff --name-only origin/$GITHUB_BASE_REF ${{ github.event.after }} -- apps | grep -E 'apps/.*/' | grep -v 'apps/common/' | cut -d/ -f2 | uniq)
-            echo "Diff between origin/$GITHUB_BASE_REF and ${{ github.event.after }}"
+            echo "Diff between origin/$GITHUB_BASE_REF and ${{ github.event.after }}: $CHANGED_APPS"
           else
             # Push
             git fetch origin ${{ github.event.before }} --depth=1
             # Only select the mofidied directories that isn't "common" but an actual app
             export CHANGED_APPS=$( git diff --name-only ${{ github.event.before }} ${{ github.event.after }} -- apps | grep -E 'apps/.*/' | grep -v 'apps/common/' | cut -d/ -f2 | uniq)
-            echo "Diff between ${{ github.event.before }} and ${{ github.event.after }}"
+            echo "Diff between ${{ github.event.before }} and ${{ github.event.after }}: $CHANGED_APPS"
           fi
           # Get all the apps that have the file "Chart.yaml"
           APPS_WITH_CHART=$(find apps/ -type d -name "Chart.yaml" -printf '%h\\n' | cut -d/ -f2 | uniq)

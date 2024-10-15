@@ -1,7 +1,7 @@
-name: aks-argocd-prod-deployment-main
+name: aks-argocd-prod-deployment-pr
 
 on:
-  push:
+  pull_request:
     branches:
       - main
 
@@ -17,6 +17,7 @@ jobs:
           git fetch origin main
           git diff --name-only origin/main...HEAD > changed_files.txt
           cat changed_files.txt
+        shell: bash
       
       - name: Verify directory changes
         id: verify_changes

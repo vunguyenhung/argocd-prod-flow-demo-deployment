@@ -13,7 +13,7 @@ jobs:
     name: Find modified apps
     runs-on: ubuntu-latest
     outputs:
-      apps_json: ${{ steps.set-file-paths.outputs.apps_json }}
+      apps_json: ${{ steps.set-variables.outputs.apps_json }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -39,19 +39,20 @@ jobs:
 
           # Export the apps as json to the outputs
           echo "apps_json=$(echo "$APPS_JSON")" >> $GITHUB_OUTPUT
-      - name: Set File Paths
-        id: set-file-paths
+      - name: Set Variables
+        id: set-variables
         shell: python
         env:
           APPS_JSON: ${{ steps.get-changed.outputs.apps_json }}
         run: |
           import os
           import json
+          import yaml
 
           apps_json = json.loads(os.getenv("APPS_JSON"))
           updated_apps_json = []
 
-          # For each app, set file paths for the app
+          # For each app, set required variables for next steps
           for app in apps_json:
               app_name = app["app_name"]
               has_chart = app["has_chart"]
@@ -61,9 +62,27 @@ jobs:
                   app["uat_values_file_path"] = f"apps/{app_name}/values/uat.yaml"
                   app["prod_values_file_path"] = f"apps/{app_name}/values/prod.yaml"
                   app["chart_file_path"] = f"apps/{app_name}/Chart.yaml"
-
-              # Set Service Now file path
+                  # Set versions from Chart.yaml
+                  with open(app["chart_file_path"]) as chart_file:
+                      chart = yaml.safe_load(chart_file)
+                      app["helm_version"] = chart["version"]
+                      app["helm_major_version"] = chart["version"].split(".")[0]
+                      app["helm_minor_version"] = chart["version"].split(".")[1]
+                      app["helm_patch_version"] = chart["version"].split(".")[2]
+              # Set Service Now Variables
               app["now_file_path"] = f"apps/{app_name}/now.yaml"
+              with open(app["now_file_path"]) as now_file:
+                  now = yaml.safe_load(now_file)
+                  app["tla"] = now["tla"]
+                  app["project_name"] = now["project_name"]
+                  app["businessunit"] = now["businessunit"]
+                  app["portfolio"] = now["portfolio"]
+                  app["capability"] = now["capability"]
+                  app["maturity_level"] = now["maturity_level"]
+                  app["azure_devops_org"] = now["azure_devops_org"]
+                  app["azure_devops_project"] = now["azure_devops_project"]
+                  app["releasedate"] = now["releasedate"]
+
               updated_apps_json.append(app)
 
           # Print the updated apps_json for debugging
@@ -93,4 +112,17 @@ jobs:
           echo "${{ matrix.app.uat_values_file_path }}"
           echo "${{ matrix.app.prod_values_file_path }}"
           echo "${{ matrix.app.chart_file_path }}"
+          echo "${{ matrix.app.helm_version }}"
+          echo "${{ matrix.app.helm_major_version }}"
+          echo "${{ matrix.app.helm_minor_version }}"
+          echo "${{ matrix.app.helm_patch_version }}"
           echo "${{ matrix.app.now_file_path }}"
+          echo "${{ matrix.app.tla }}"
+          echo "${{ matrix.app.project_name }}"
+          echo "${{ matrix.app.businessunit }}"
+          echo "${{ matrix.app.portfolio }}"
+          echo "${{ matrix.app.capability }}"
+          echo "${{ matrix.app.maturity_level }}"
+          echo "${{ matrix.app.azure_devops_org }}"
+          echo "${{ matrix.app.azure_devops_project }}"
+          echo "${{ matrix.app.releasedate }}"

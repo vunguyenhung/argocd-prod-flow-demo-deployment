@@ -56,6 +56,8 @@ jobs:
           for app in apps_json:
               app_name = app["app_name"]
               has_chart = app["has_chart"]
+
+              app["app_dir_path"] = f"apps/{app_name}"
               # Set Helm file paths
               if has_chart:
                   app["dev_values_file_path"] = f"apps/{app_name}/values/dev.yaml"
@@ -107,6 +109,7 @@ jobs:
       - name: Get the output
         run: |
           echo "${{ matrix.app.app_name }}"
+          echo "${{ matrix.app.app_dir_path }}"
           echo "${{ matrix.app.has_chart }}"
           echo "${{ matrix.app.dev_values_file_path }}"
           echo "${{ matrix.app.uat_values_file_path }}"

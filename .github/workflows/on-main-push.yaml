@@ -1,0 +1,44 @@
+name: aks-argocd-prod-deployment-pr
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  get-changed-apps:
+    name: Find modified apps
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.get-changed.outputs.matrix }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Get changed apps
+        id: get-changed
+        run: |
+          # See https://github.community/t/check-pushed-file-changes-with-git-diff-tree-in-github-actions/17220/10 
+          if [ $GITHUB_BASE_REF ]; then
+            # Pull Request
+            git fetch origin $GITHUB_BASE_REF --depth=1
+            # Only select the mofidied directories that isn't "common" but an actual app
+            export CHANGED_APPS=$( git diff --name-only origin/$GITHUB_BASE_REF ${{ github.event.after }} -- apps | grep -E 'apps/.*/' | grep -v 'apps/common/' | cut -d/ -f2 | uniq)
+            echo "Diff between origin/$GITHUB_BASE_REF and ${{ github.event.after }}"
+          else
+            # Push
+            git fetch origin ${{ github.event.before }} --depth=1
+            # Only select the mofidied directories that isn't "common" but an actual app
+            export CHANGED_APPS=$( git diff --name-only ${{ github.event.before }} ${{ github.event.after }} -- apps | grep -E 'apps/.*/' | grep -v 'apps/common/' | cut -d/ -f2 | uniq)
+            echo "Diff between ${{ github.event.before }} and ${{ github.event.after }}"
+          fi
+          # Get all the apps that have the file "Chart.yaml"
+          APPS_WITH_CHART=$(find apps/ -type d -name "Chart.yaml" -printf '%h\\n' | cut -d/ -f2 | uniq)
+
+          # Create our json structure [{"app_name": "source|destination-...", "has_chart": false|true}]
+          APPS_JSON=$(echo "$CHANGED_APPS" | jq -R -s -c --argjson appsWithChart "$(echo "$APPS_WITH_CHART" | jq -R -s 'split("\\n")[:-1]')" 'split("\\n")[:-1] | map({app_name: ., has_chart: (. as $app | $appsWithChart | any(. == $app))})')
+
+          echo "Apps json: $APPS_JSON"
+          # Export the apps as json to the outputs
+          echo "matrix=$(echo "$APPS_JSON")" >> $GITHUB_OUTPUT

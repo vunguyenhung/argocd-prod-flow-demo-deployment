@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: app-a
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/vunguyenhung/argocd-prod-flow-demo-deployment
+    # Track latest tags
+    targetRevision: ">=0.0.0"
+    path: "."
+    helm:
+      valueFiles:
+      - values.prod.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated: 
+      selfHeal: true

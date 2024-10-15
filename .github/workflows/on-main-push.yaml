@@ -44,7 +44,7 @@ jobs:
           echo "APPS_WITH_CHART: $APPS_WITH_CHART"
 
           # Create our json structure [{"app_name": "source|destination-...", "has_chart": false|true}]
-          APPS_JSON=$(echo "$CHANGED_APPS" | jq -R -s -c --argjson appsWithChart "$(echo "$APPS_WITH_CHART" | jq -R -s 'split(\"\\n\")[:-1]')" 'split(\"\\n\")[:-1] | map({app_name: ., has_chart: (. as $app | $appsWithChart | any(. == $app))})')
+          APPS_JSON=$(echo "$CHANGED_APPS" | jq -R -s -c --argjson appsWithChart "$(echo "$APPS_WITH_CHART" | jq -R -s 'split("\n")[:-1]')" 'split("\n")[:-1] | map({app_name: ., has_chart: (. as $app | $appsWithChart | any(. == $app))})')
           echo "APPS_JSON: $APPS_JSON"
 
           # Export the apps as json to the outputs

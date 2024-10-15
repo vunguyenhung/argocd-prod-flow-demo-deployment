@@ -1,19 +1,19 @@
-name: aks-argocd-prod-deployment-pr
+name: on-main-push
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'apps/**'
-      - '.github/workflows/on-main-push.yaml'
+      - "apps/**"
+      - ".github/workflows/on-main-push.yaml"
 
 jobs:
   get-changed-apps:
     name: Find modified apps
     runs-on: ubuntu-latest
     outputs:
-      matrix: ${{ steps.get-changed.outputs.matrix }}
+      apps_json: ${{ steps.set-file-paths.outputs.apps_json }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,4 +38,59 @@ jobs:
           echo "APPS_JSON: $APPS_JSON"
 
           # Export the apps as json to the outputs
-          echo "matrix=$(echo "$APPS_JSON")" >> $GITHUB_OUTPUT
+          echo "apps_json=$(echo "$APPS_JSON")" >> $GITHUB_OUTPUT
+      - name: Set File Paths
+        id: set-file-paths
+        shell: python
+        env:
+          APPS_JSON: ${{ steps.get-changed.outputs.apps_json }}
+        run: |
+          import os
+          import json
+
+          apps_json = json.loads(os.getenv("APPS_JSON"))
+          updated_apps_json = []
+
+          # For each app, set file paths for the app
+          for app in apps_json:
+              app_name = app["app_name"]
+              has_chart = app["has_chart"]
+              # Set Helm file paths
+              if has_chart:
+                  app["dev_values_file_path"] = f"apps/{app_name}/values/dev.yaml"
+                  app["uat_values_file_path"] = f"apps/{app_name}/values/uat.yaml"
+                  app["prod_values_file_path"] = f"apps/{app_name}/values/prod.yaml"
+                  app["chart_file_path"] = f"apps/{app_name}/Chart.yaml"
+
+              # Set Service Now file path
+              app["now_file_path"] = f"apps/{app_name}/now.yaml"
+              updated_apps_json.append(app)
+
+          # Print the updated apps_json for debugging
+          print(json.dumps(updated_apps_json, indent=2))
+
+          # Export the updated apps_json to GitHub output
+          with open(os.getenv("GITHUB_OUTPUT"), "a") as github_output:
+              github_output.write(f"apps_json={json.dumps(updated_apps_json)}\n")
+  test-output:
+    needs: get-changed-apps
+    strategy:
+      fail-fast: false
+      matrix:
+        app: ${{fromJson(needs.get-changed-apps.outputs.apps_json)}}
+    name: Test Output
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Get the output
+        run: |
+          echo "${{ matrix.app.app_name }}"
+          echo "${{ matrix.app.has_chart }}"
+          echo "${{ matrix.app.dev_values_file_path }}"
+          echo "${{ matrix.app.uat_values_file_path }}"
+          echo "${{ matrix.app.prod_values_file_path }}"
+          echo "${{ matrix.app.chart_file_path }}"
+          echo "${{ matrix.app.now_file_path }}"

@@ -1,9 +1,12 @@
 name: aks-argocd-prod-deployment-pr
 
 on:
-  pull_request:
+  push:
     branches:
       - main
+    paths:
+      - 'apps/**'
+      - '.github/workflows/on-main-push.yaml'
 
 jobs:
   get-changed-apps:

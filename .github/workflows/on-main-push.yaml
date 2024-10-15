@@ -60,9 +60,9 @@ jobs:
               app["app_dir_path"] = f"apps/{app_name}"
               # Set Helm file paths
               if has_chart:
-                  app["dev_values_file_path"] = f"apps/{app_name}/values/dev.yaml"
-                  app["uat_values_file_path"] = f"apps/{app_name}/values/uat.yaml"
-                  app["prod_values_file_path"] = f"apps/{app_name}/values/prod.yaml"
+                  app["dev_values_file_path"] = f"apps/{app_name}/values.dev.yaml"
+                  app["uat_values_file_path"] = f"apps/{app_name}/values.uat.yaml"
+                  app["prod_values_file_path"] = f"apps/{app_name}/values.prod.yaml"
                   app["chart_file_path"] = f"apps/{app_name}/Chart.yaml"
                   # Set versions from Chart.yaml
                   with open(app["chart_file_path"]) as chart_file:

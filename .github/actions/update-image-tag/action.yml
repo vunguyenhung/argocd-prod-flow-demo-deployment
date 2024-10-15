@@ -44,13 +44,12 @@ runs:
         fi
       shell: bash
 
-    - name: Create a new temporary branch from base branch
+    - name: 
       id: create_temp_branch
       run: |
         git fetch origin ${{ inputs.base_branch }}
         git checkout ${{ inputs.base_branch }}
         git checkout -b ${{ inputs.temp_branch }}
-        echo "temp_branch=${{ inputs.temp_branch }}" >> $GITHUB_OUTPUT
       shell: bash
 
     - name: Update image tag

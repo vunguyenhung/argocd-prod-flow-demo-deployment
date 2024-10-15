@@ -1,0 +1,59 @@
+name: aks-argocd-prod-deployment-main
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  verify_changes:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: List changed files
+        run: |
+          git fetch origin main
+          git diff --name-only origin/main...HEAD > changed_files.txt
+          cat changed_files.txt
+      
+      - name: Verify directory changes
+        id: verify_changes
+        run: |
+          def get_unique_changed_directories(filename):
+            """
+            Reads the file specified by filename containing a list of changed files,
+            extracts the directory of each file, and returns a list of unique directories.
+            """
+            changed_dirs = []
+            with open(filename, "r") as f:
+              for file in f:
+                file = file.strip()
+                dir_name = file.split("/")[0]
+                if dir_name not in changed_dirs:
+                  changed_dirs.append(dir_name)
+            return changed_dirs
+
+          def main():
+            """
+            Gets the filename from the command line arguments.
+            Gets the list of unique directories from the file.
+            If there's more than one directory, prints an error message and exits.
+            Otherwise, prints the directory and sets an output variable.
+            """
+            filename = "changed_files.txt"
+            unique_dirs = get_unique_changed_directories(filename)
+            if len(unique_dirs) != 1:
+              print(f"Changes affect multiple folders: {unique_dirs}. Please only change one folder.")
+              exit(1)
+            else:
+              print(f"Changes affect only one directory: {unique_dirs[0]}")
+              # Simulate setting an output variable in GitHub Actions
+              print(f"::set-output name=app_directory_path::{unique_dirs[0]}") 
+
+          if __name__ == "__main__":
+            main()
+        shell: python
+    outputs:
+      app_directory_path: ${{ steps.verify_changes.outputs.app_directory_path }}

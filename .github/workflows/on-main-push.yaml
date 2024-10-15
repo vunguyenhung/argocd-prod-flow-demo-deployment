@@ -27,7 +27,7 @@ jobs:
             # Pull Request
             git fetch origin $GITHUB_BASE_REF --depth=1
             # Only select the mofidied directories that isn't "common" but an actual app
-            export CHANGED_APPS=$( git diff --name-only origin/$GITHUB_BASE_REF ${{ github.event.after }} -- apps | grep -E 'apps/.*/' | grep -v 'apps/common/' | cut -d/ -f2 | uniq)
+            export CHANGED_APPS=$( git diff --name-only origin/$GITHUB_BASE_REF ${{ github.event.after }} -- apps | grep -E 'apps/.*/' | cut -d/ -f2 | uniq)
             echo "Diff between origin/$GITHUB_BASE_REF and ${{ github.event.after }}: $CHANGED_APPS"
           else
             # Push

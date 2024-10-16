@@ -29,6 +29,11 @@ jobs:
 
           echo "CHANGED_APPS: $CHANGED_APPS"
 
+          if [ -z "$CHANGED_APPS" ]; then
+              echo "No apps have been changed"
+              exit 0
+          fi
+
           # Get all the apps that have the file "Chart.yaml"
           APPS_WITH_CHART=$(find apps/ -type f -name "Chart.yaml" -exec dirname {} \; | cut -d/ -f2 | uniq)
           echo "APPS_WITH_CHART: $APPS_WITH_CHART"

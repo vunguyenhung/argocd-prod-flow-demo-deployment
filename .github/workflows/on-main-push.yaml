@@ -14,6 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       apps_json: ${{ steps.set-variables.outputs.apps_json }}
+      has_changed_apps: ${{ steps.get-changed.outputs.has_changed_apps }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,8 +32,11 @@ jobs:
 
           if [ -z "$CHANGED_APPS" ]; then
               echo "apps_json=[]" >> $GITHUB_OUTPUT
+              echo "has_changed_apps=false" >> $GITHUB_OUTPUT
               exit 0
           fi
+
+          echo "has_changed_apps=true" >> $GITHUB_OUTPUT
 
           # Get all the apps that have the file "Chart.yaml"
           APPS_WITH_CHART=$(find apps/ -type f -name "Chart.yaml" -exec dirname {} \; | cut -d/ -f2 | uniq)
@@ -100,6 +104,7 @@ jobs:
               github_output.write(f"apps_json={json.dumps(updated_apps_json)}\n")
   test-output:
     needs: get-changed-apps
+    if: needs.get-changed-apps.outputs.has_changed_apps == 'true'
     strategy:
       fail-fast: false
       matrix:

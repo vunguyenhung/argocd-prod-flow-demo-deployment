@@ -2,10 +2,19 @@ name: Manual Workflow
 
 on:
   workflow_dispatch:
+    inputs:
+      name:
+        description: 'Your name'
+        required: true
+        default: 'World'
+      greeting:
+        description: 'A greeting message'
+        required: false
+        default: 'Hello'
 
 jobs:
   say-hello:
     runs-on: ubuntu-latest
     steps:
-      - name: Echo Hello World
-        run: echo "Hello, world!"
+      - name: Echo Greeting
+        run: echo "${{ github.event.inputs.greeting }}, ${{ github.event.inputs.name }}!"
